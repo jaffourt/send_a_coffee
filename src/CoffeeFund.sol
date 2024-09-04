@@ -15,6 +15,11 @@ contract CoffeeFund {
         userNames[msg.sender] = _name;
     }
 
+    modifier isUserRegistered(address _user) {
+        require(bytes(userNames[_user]).length > 0, "User not registered");
+        _;
+    }
+
     modifier hasSufficientBalance(uint256 amount) {
         require(address(this).balance >= amount, "Contract ETH balance is insufficient");
         _;
@@ -24,19 +29,22 @@ contract CoffeeFund {
         return address(this).balance;
     }
 
-    function deposit(address _user) public payable {
-        require(bytes(userNames[_user]).length > 0, "User not registered");
-        require(msg.value > 0, "Can't buy a coffe with that!");
+    function getUserNames(address _user) public view returns (string memory) {
+        return userNames[_user];
+    }
 
-        // transfer funds
+    function getCoffeeFunds(address _user) public view returns (uint256) {
+        return coffeeFunds[_user];
+    }
+
+    function deposit(address _user) public payable isUserRegistered(_user) {
+        require(msg.value > 0, "Can't buy a coffe with that!");
         coffeeFunds[_user] += msg.value;
         emit Deposit(_user, msg.value);
     }
 
-    function withdraw(uint256 amount) public hasSufficientBalance(amount) {
-        // get the address of the request sender, i.e., the user
+    function withdraw(uint256 amount) public isUserRegistered(msg.sender) hasSufficientBalance(amount) {
         address user = msg.sender;
-        require(bytes(userNames[user]).length > 0, "User not registered");
 
         // withdraw user funds
         require(amount > 0, "Cannot withdraw 0");
