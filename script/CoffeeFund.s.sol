@@ -15,14 +15,19 @@ contract CoffeeFundScript is Script {
         coffeeFund = new CoffeeFund();
 
         // Add user
-        coffeeFund.registerUser("Josef A");
-        console.log("User registered:", coffeeFund.getUserNames(address(this)));
+        coffeeFund.registerUser("Josef");
+        console.log("User registered:", coffeeFund.getUserName());
 
-        // Deposit funds
-        coffeeFund.deposit{value: 1 ether}(address(this));
-        console.log("Deposited funds:", coffeeFund.getCoffeeFunds(address(this)));
+        // Add other user
+        address jeanLucAddress = address(0x456);
+        coffeeFund.registerOtherUser(jeanLucAddress, "Jean-luc");
+        console.log("Other user registered:", coffeeFund.userNames(jeanLucAddress));
 
-        // Withdraw funds
+        // Transfer funds from sender (Josef) to user (Jean-luc)
+        coffeeFund.transfer{value: 1 ether}(jeanLucAddress);
+        console.log("Transferred funds:", coffeeFund.getCoffeeFunds(jeanLucAddress));
+
+        // Withdraw funds should fail 
         coffeeFund.withdraw(0.5 ether);
 
         vm.stopBroadcast();

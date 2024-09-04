@@ -6,14 +6,28 @@ contract CoffeeFund {
     mapping(address => uint256) public coffeeFunds;
     mapping(address => string) public userNames;
 
-    // deposit money from one user's wallet to a user's coffee fund
-    event Deposit(address indexed user, uint256 amount);
-    // withdraw money from user's coffe fund
+    // transfer money from one user's wallet to a user's coffee fund
+    event Transfer(address indexed user, uint256 amount);
+    // withdraw money from user's coffee fund
     event Withdrawal(address indexed user, uint256 amount);
 
     function registerUser(string memory _name) public {
         userNames[msg.sender] = _name;
     }
+
+    // TODO: delete this method
+    function registerOtherUser(address _user, string memory _name) public {
+        userNames[_user] = _name;
+    }
+
+    function getUserName() public view returns (string memory) {
+        return userNames[msg.sender];
+    }
+
+    function getCoffeeFunds(address _user) public view returns (uint256) {
+        return coffeeFunds[_user];
+    }
+
 
     modifier isUserRegistered(address _user) {
         require(bytes(userNames[_user]).length > 0, "User not registered");
@@ -25,22 +39,10 @@ contract CoffeeFund {
         _;
     }
 
-    function getContractBalance() public view returns (uint256) {
-        return address(this).balance;
-    }
-
-    function getUserNames(address _user) public view returns (string memory) {
-        return userNames[_user];
-    }
-
-    function getCoffeeFunds(address _user) public view returns (uint256) {
-        return coffeeFunds[_user];
-    }
-
-    function deposit(address _user) public payable isUserRegistered(_user) {
-        require(msg.value > 0, "Can't buy a coffe with that!");
+    function transfer(address _user) public payable isUserRegistered(_user) {
+        require(msg.value > 0, "Can't buy a coffee with that!");
         coffeeFunds[_user] += msg.value;
-        emit Deposit(_user, msg.value);
+        emit Transfer(_user, msg.value);
     }
 
     function withdraw(uint256 amount) public isUserRegistered(msg.sender) hasSufficientBalance(amount) {
